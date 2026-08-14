@@ -15,9 +15,27 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
+
           script: |
+            cd /home/ubuntu
+
+            if [ ! -d "FEBE" ]; then
+              git clone https://github.com/${{ github.repository }}.git FEBE
+            else
+              cd FEBE
+              git pull origin main
+              cd ..
+            fi
+
             cd /home/ubuntu/FEBE
-            git pull origin main
-            pip3 install -r requirements.txt
-            pkill -f "python3 app.py" || true
-            nohup python3 app.py > app.log 2>&1 &
+
+            sudo apt update
+            sudo apt install -y python3-venv
+
+            python3 -m venv venv
+
+            ./venv/bin/pip install -r requirements.txt
+
+            pkill -f "python.*app.py" || true
+
+            nohup ./venv/bin/python app.py > app.log 2>&1 &
