@@ -1,7 +1,9 @@
 name: Deploy Flask App
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - main
 
 jobs:
   deploy:
@@ -17,16 +19,6 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
 
           script: |
-            cd /home/ubuntu
-
-            if [ ! -d "FEBE" ]; then
-              git clone https://github.com/${{ github.repository }}.git FEBE
-            else
-              cd FEBE
-              git pull origin main
-              cd ..
-            fi
-
             cd /home/ubuntu/FEBE
 
             sudo apt update
@@ -36,6 +28,6 @@ jobs:
 
             ./venv/bin/pip install -r requirements.txt
 
-            pkill -f "python.*app.py" || true
-
             nohup ./venv/bin/python app.py > app.log 2>&1 &
+
+            echo "Flask application started"
